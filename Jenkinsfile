@@ -19,10 +19,10 @@ pipeline {
             description: '',
             name: 'EnvironmentName')
         string(defaultValue: "main", description: 'What BranchName?', name: 'BranchName')    
-        string(defaultValue: "sample", description: 'What servicename?', name: 'ServiceName')
+        string(defaultValue: "guestbook", description: 'What servicename?', name: 'ServiceName')
         string(defaultValue: "latest", description: 'What buildVersion? Required when you are Choosing Rollout Option', name: 'BuildVersion')
-	string(defaultValue: "https://github.com/slovink/" , description: 'Source Code', name: 'SourceCodeRepo')
-        string(defaultValue: "kubecode", description: 'Docker Repository ', name: 'DockerRegistry')
+	string(defaultValue: "https://github.com/psiservices-sabbas/sample-nginx-app.git" , description: 'Source Code', name: 'SourceCodeRepo')
+        string(defaultValue: "psisyed", description: 'Docker Repository ', name: 'DockerRegistry')
         
 
 
@@ -40,7 +40,7 @@ pipeline {
                      extensions: [[$class: 'LocalBranch']],
                      submoduleCfg: [],
                      userRemoteConfigs: [[
-                         url: '${SourceCodeRepo}/${ServiceName}-application.git']]]) 
+                         url: '${SourceCodeRepo}']]]) 
             }
         }
         stage('Build') {
@@ -77,7 +77,7 @@ pipeline {
                      extensions: [[$class: 'LocalBranch']],
                      submoduleCfg: [],
                      userRemoteConfigs: [[
-                         url: 'https://github.com/slovink/argocd-bluegreen.git']]]) 
+                         url: 'https://github.com/psiservices-sabbas/sample-nginx-helm.git']]]) 
             }
         }
 	    
@@ -94,9 +94,9 @@ pipeline {
                 if ("${REQUESTED_ACTION}"=='Create')
                 
                 { sh'ls;'
-                sh'helm install  ${ServiceName}-${EnvironmentName} ${ServiceName} --set name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f ${ServiceName}/values.yaml --namespace ${NameSpace};'}
+                sh'helm install  ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f argocd/values.yaml --namespace ${NameSpace};'}
                 else
-                {sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f ${ServiceName}/values.yaml '}              
+                {sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f argocd/values.yaml '}              
                 
                 }
                }
@@ -114,7 +114,7 @@ pipeline {
                 if ("${REQUESTED_ACTION}"=='Rollout')
                 
                 { sh'ls;'
-                sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f ${ServiceName}/values.yaml '}
+                sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f argocd/values.yaml '}
             
                 }
                }
