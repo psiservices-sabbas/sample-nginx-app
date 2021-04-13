@@ -46,7 +46,7 @@ pipeline {
         stage('Build') {
             when {
                 
-                expression { params.REQUESTED_ACTION == 'Build' || params.REQUESTED_ACTION == 'Create' }
+                expression { params.REQUESTED_ACTION == 'Update' || params.REQUESTED_ACTION == 'Create' }
             }
             steps {
                 echo 'Building..'
@@ -57,7 +57,7 @@ pipeline {
         }
         stage('Docker build and publish') {
             when {
-                expression { params.REQUESTED_ACTION == 'Build' || params.REQUESTED_ACTION == 'Create' }
+                expression { params.REQUESTED_ACTION == 'Update' || params.REQUESTED_ACTION == 'Create' }
             }
             steps {
                 
@@ -114,7 +114,7 @@ pipeline {
                 if ("${REQUESTED_ACTION}"=='Rollout')
                 
                 { sh'ls;'
-                sh 'helm upgrade ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
+                sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
             
                 }
                }
