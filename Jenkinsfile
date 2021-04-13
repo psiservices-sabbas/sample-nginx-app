@@ -94,9 +94,9 @@ pipeline {
                 if ("${REQUESTED_ACTION}"=='Create')
                 
                 { sh'ls;'
-                sh'helm install  ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f guestbook/values.yaml --namespace ${NameSpace};'}
+                sh'helm install  ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f guestbook/values.yaml --namespace ${NameSpace};'}
                 else
-                {sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}              
+                {sh 'helm upgrade ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}              
                 
                 }
                }
@@ -114,7 +114,7 @@ pipeline {
                 if ("${REQUESTED_ACTION}"=='Rollout')
                 
                 { sh'ls;'
-                sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
+                sh 'helm upgrade ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
             
                 }
                }
