@@ -1,4 +1,4 @@
-pipeline {
+peline {
     agent {
     node {
         label 'blue-green'
@@ -18,18 +18,18 @@ pipeline {
             choices: ['dev', 'uat', 'prod'],
             description: '',
             name: 'EnvironmentName')
-        string(defaultValue: "master", description: 'What BranchName?', name: 'BranchName')    
+        string(defaultValue: "master", description: 'What BranchName?', name: 'BranchName')
         string(defaultValue: "guestbook", description: 'What servicename?', name: 'ServiceName')
         string(defaultValue: "latest", description: 'What buildVersion? Required when you are Choosing Rollout Option', name: 'BuildVersion')
-	string(defaultValue: "https://github.com/psiservices-sabbas/sample-nginx-app.git" , description: 'Source Code', name: 'SourceCodeRepo')
+        string(defaultValue: "https://github.com/psiservices-sabbas/sample-nginx-app.git" , description: 'Source Code', name: 'SourceCodeRepo')
         string(defaultValue: "psisyed", description: 'Docker Repository ', name: 'DockerRegistry')
-        
+
 
 
     }
     stages {
-        
-        
+
+
         stage ('Prepare') {
             steps {
                 echo "preparing...."
@@ -40,17 +40,17 @@ pipeline {
                      extensions: [[$class: 'LocalBranch']],
                      submoduleCfg: [],
                      userRemoteConfigs: [[
-                         url: '${SourceCodeRepo}']]]) 
+                         url: '${SourceCodeRepo}']]])
             }
         }
         stage('Build') {
             when {
-                
+
                 expression { params.REQUESTED_ACTION == 'Build' || params.REQUESTED_ACTION == 'Create' }
             }
             steps {
                 echo 'Building..'
-                
+
                 sh 'docker build -t ${ServiceName}:${BuildVersion} .'
 
             }
@@ -60,10 +60,10 @@ pipeline {
                 expression { params.REQUESTED_ACTION == 'Build' || params.REQUESTED_ACTION == 'Create' }
             }
             steps {
-                
+
                 sh 'docker tag ${ServiceName}:${BuildVersion} ${DockerRegistry}/${ServiceName}:${EnvironmentName}-${BranchName}-${BUILD_NUMBER}'
                 sh 'docker push ${DockerRegistry}/${ServiceName}:${EnvironmentName}-${BranchName}-${BUILD_NUMBER}'
-                
+
             }
         }
 
@@ -77,48 +77,67 @@ pipeline {
                      extensions: [[$class: 'LocalBranch']],
                      submoduleCfg: [],
                      userRemoteConfigs: [[
-                         url: 'https://github.com/psiservices-sabbas/sample-nginx-helm.git']]]) 
+                         url: 'https://github.com/psiservices-sabbas/sample-nginx-helm.git']]])
             }
         }
-	    
+
        stage('Deploy') {
-	               
+
             steps {
                 echo 'Deploying....'
-                
+
                 script {
-                   
+
                     sh 'pwd;'
-                    
-                    
+
+
                 if ("${REQUESTED_ACTION}"=='Create')
-                
+
                 { sh'ls;'
-                sh'helm install  ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f guestbook/values.yaml --namespace ${NameSpace};'}
+                sh'helm install  ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --debug -f guestbook/values.yaml --namespace ${NameSpace};'}
                 else
-                {sh 'helm upgrade ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}              
-                
+                {sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${EnvironmentName}-${BranchName}-${BUILD_NUMBER},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
+
                 }
                }
         }
        stage('Rollout') {
-	               
+
             steps {
                 echo 'Deploying....'
-                
+
                 script {
-                   
+
                     sh 'pwd;'
-                    
-                    
+
+
                 if ("${REQUESTED_ACTION}"=='Rollout')
-                
+
                 { sh'ls;'
-                sh 'helm upgrade ${ServiceName}-${EnvironmentName}-env ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
-            
+                sh 'helm upgrade ${ServiceName}-${EnvironmentName} ${ServiceName} --set env=${EnvironmentName},name=${ServiceName},namespace=${NameSpace},image.tag=${BuildVersion},image.repository=${DockerRegistry}/${ServiceName} --namespace ${NameSpace} --debug -f guestbook/values.yaml '}
+
                 }
-               }
-        }	    
-	    
+               
+       stage('Delete') {
+
+            steps {
+                echo 'Deploying....'
+
+                script {
+
+                    sh 'pwd;'
+
+
+                if ("${REQUESTED_ACTION}"=='Delete')
+
+                { sh'ls;'
+                sh 'helm uninstall ${ServiceName}-${EnvironmentName} --namespace ${NameSpace} '}
+
+                }
+               }			   
+			   
+			   
+        }
+
     }
 }
